@@ -16,11 +16,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.tooploox.akademiamobile.natychmiastogram.util.BitmapUtil;
+import com.tooploox.akademiamobile.natychmiastogram.util.ImageFilter;
 
 public class MainActivity extends Activity {
 
@@ -30,6 +32,8 @@ public class MainActivity extends Activity {
     protected ImageView ivPicture;
 
     String mCurrentPhotoPath = null;
+
+    Bitmap mCurrentlyDisplayedBitmap = null;
 
     protected void afterSetContentView() {
         ivPicture = (ImageView) findViewById(R.id.iv_picture);
@@ -75,7 +79,7 @@ public class MainActivity extends Activity {
                 if (requestCode == RC_GET_PICTURE) {
                     uri = data.getData();
                 } else if (requestCode == RC_IMAGE_CAPTURE) {
-                    uri = Uri.fromFile( new File(mCurrentPhotoPath));
+                    uri = Uri.fromFile(new File(mCurrentPhotoPath));
                 }
 
                 task.execute(uri);
@@ -106,6 +110,11 @@ public class MainActivity extends Activity {
             }
             storageDir.delete();
         }
+        // If the bitmap was already used and not recycled, recycle it to release memory
+        if (mCurrentlyDisplayedBitmap != null && !mCurrentlyDisplayedBitmap.isRecycled()) {
+            mCurrentlyDisplayedBitmap.recycle();
+            mCurrentlyDisplayedBitmap = null;
+        }
         super.onDestroy();
     }
 
@@ -118,9 +127,31 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu; set options in XML
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        // handle options item selected
+        switch (item.getItemId()) {
+            case R.id.action_sepia:
+                applySepia();
+                return true;
+        }
+        return super.onMenuItemSelected(featureId, item);
+    }
+
+    private void applySepia() {
+        if (mCurrentlyDisplayedBitmap != null) {
+            Bitmap tmp = ImageFilter.sepia(mCurrentlyDisplayedBitmap);
+            mCurrentlyDisplayedBitmap.recycle();
+            mCurrentlyDisplayedBitmap = tmp;
+            ivPicture.setImageBitmap(mCurrentlyDisplayedBitmap);
+        } else {
+            Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
+        }
     }
 
     private File getStorage() {
@@ -156,7 +187,6 @@ public class MainActivity extends Activity {
             }
 
             InputStream inStream = null;
-            Bitmap bitmap = null;
 
             // NOTE: First check the size, then scale and load the image.
             //       See: http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
@@ -167,6 +197,11 @@ public class MainActivity extends Activity {
 
                 // NOTE: This will cause a crash on large pictures (Out of Memory)
                 //bitmap = BitmapFactory.decodeStream(inStream);
+
+                // If the bitmap was already used, recycle it to release memory
+                if (mCurrentlyDisplayedBitmap != null) {
+                    mCurrentlyDisplayedBitmap.recycle();
+                }
 
                 // First check the size of the image
                 BitmapFactory.Options checkOptions = new BitmapFactory.Options();
@@ -184,7 +219,7 @@ public class MainActivity extends Activity {
                 // Decode and scale the image
                 inStream = cr.openInputStream(uri);
 
-                bitmap = BitmapFactory.decodeStream(inStream, null, options);
+                mCurrentlyDisplayedBitmap = BitmapFactory.decodeStream(inStream, null, options);
 
                 inStream.close();
             } catch (FileNotFoundException e) {
@@ -195,7 +230,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
 
-            return bitmap;
+            return mCurrentlyDisplayedBitmap;
         }
 
         @Override
