@@ -2,8 +2,9 @@
 <resources>
 
     <string name="app_name">Natychmiastogram</string>
-    <string name="action_grayscale">Apply grayscale</string>
-    <string name="action_sepia">Apply sepia</string>
+    <string name="action_grayscale">Grayscale</string>
+    <string name="action_sepia">Sepia</string>
+    <string name="action_save">Zapisz</string>
     <string name="hello_world">Hello world!</string>
     <string name="take_picture_placeholder_txt">Tapnij, aby zrobić zdjęcie</string>
 

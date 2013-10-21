@@ -2,6 +2,7 @@ package com.tooploox.akademiamobile.natychmiastogram;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -142,10 +143,14 @@ public class MainActivity extends Activity {
             case R.id.action_grayscale:
                 applyGrayscale();
                 return true;
+            case R.id.action_save:
+                saveBitmap();
+                return true;
         }
         return super.onMenuItemSelected(featureId, item);
     }
 
+    // TODO: kick it off in background thread
     private void applySepia() {
         if (mCurrentlyDisplayedBitmap != null) {
             Bitmap tmp = ImageFilter.sepia(mCurrentlyDisplayedBitmap);
@@ -157,6 +162,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    // TODO: move to background thread
     private void applyGrayscale() {
         if (mCurrentlyDisplayedBitmap != null) {
             Bitmap tmp = ImageFilter.grayscale(mCurrentlyDisplayedBitmap);
@@ -165,6 +171,37 @@ public class MainActivity extends Activity {
             mCurrentlyDisplayedBitmap = tmp;
         } else {
             Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void saveBitmap() {
+        File picturesDir =
+                        new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator
+                                        + "natychmiastogram");
+        if(!picturesDir.exists()) {
+            if (!picturesDir.mkdirs()) {
+                // TODO: error-handling
+            }
+        }
+        String filename = "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
+        File outFile = new File(picturesDir + File.separator + filename);
+        if (mCurrentlyDisplayedBitmap != null) {
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(outFile);
+                mCurrentlyDisplayedBitmap.compress(Bitmap.CompressFormat.JPEG, 95, out);
+                out.flush();
+            } catch (IOException e) {
+                Toast.makeText(this, "Coś nie poszło jak trzeba...", Toast.LENGTH_LONG).show();
+            } finally {
+                try {
+                    out.close();
+                    Toast.makeText(this, String.format("Zdjęcie zapisane: %s", outFile.getAbsoluteFile()), Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // TODO: add error-handling
+                }
+            }
         }
     }
 
