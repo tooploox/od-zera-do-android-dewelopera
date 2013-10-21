@@ -1,16 +1,19 @@
 package com.tooploox.akademiamobile.natychmiastogram;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.View;
@@ -26,6 +29,8 @@ public class MainActivity extends Activity {
 
     protected ImageView ivPicture;
 
+    String mCurrentPhotoPath = null;
+
     protected void afterSetContentView() {
         ivPicture = (ImageView) findViewById(R.id.iv_picture);
 
@@ -36,6 +41,8 @@ public class MainActivity extends Activity {
                 //Toast.makeText(MainActivity.this, "Tapnąłeś mnie!", Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // Set the file, where you want the file to be saved
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createImageFile()));
                 startActivityForResult(intent, RC_IMAGE_CAPTURE);
             }
         });
@@ -63,8 +70,15 @@ public class MainActivity extends Activity {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == RC_IMAGE_CAPTURE || requestCode == RC_GET_PICTURE) {
                 LoadBitmapTask task = new LoadBitmapTask();
+                Uri uri = null;
 
-                task.execute(data.getData());
+                if (requestCode == RC_GET_PICTURE) {
+                    uri = data.getData();
+                } else if (requestCode == RC_IMAGE_CAPTURE) {
+                    uri = Uri.fromFile( new File(mCurrentPhotoPath));
+                }
+
+                task.execute(uri);
             }
         } else if (resultCode == Activity.RESULT_CANCELED) {
             Toast.makeText(this, "Nie to nie! Foch!", Toast.LENGTH_SHORT).show();
@@ -77,6 +91,22 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    @Override
+    protected void onDestroy() {
+        // clean the mess we created on external memory :)
+        File storageDir = getStorage();
+        if (storageDir != null && storageDir.exists() && storageDir.isDirectory()) {
+            File[] files = storageDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    file.delete();
+                }
+            }
+            storageDir.delete();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -93,11 +123,37 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    private File getStorage() {
+        return new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/temp/");
+    }
+
+    private File createImageFile() {
+        // Create a temporary image file
+        File storageDir = getStorage();
+
+        try {
+            if (!storageDir.exists()) {
+                storageDir.mkdirs();
+            }
+            File image = File.createTempFile("img", ".jpg", storageDir);
+
+            mCurrentPhotoPath = image.getAbsolutePath();
+            return image;
+        } catch (Exception e) {
+            Toast.makeText(this, "Hmm, na pewno możesz zapisywać na kartę SD?", Toast.LENGTH_LONG).show();
+            return null;
+        }
+    }
+
     private class LoadBitmapTask extends AsyncTask<Uri, Void, Bitmap> {
 
         @Override
         protected Bitmap doInBackground(Uri... params) {
             Uri uri = params[0];
+
+            if (uri == null) {
+                return null;
+            }
 
             InputStream inStream = null;
             Bitmap bitmap = null;
@@ -106,11 +162,11 @@ public class MainActivity extends Activity {
             //       See: http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
 
             try {
-                inStream = getContentResolver().openInputStream(uri);
+                ContentResolver cr = getContentResolver();
+                inStream = cr.openInputStream(uri);
 
                 // NOTE: This will cause a crash on large pictures (Out of Memory)
                 //bitmap = BitmapFactory.decodeStream(inStream);
-
 
                 // First check the size of the image
                 BitmapFactory.Options checkOptions = new BitmapFactory.Options();
@@ -126,7 +182,7 @@ public class MainActivity extends Activity {
                 options.inSampleSize = BitmapUtil.calculateInSampleSize(checkOptions, 640, 480);
 
                 // Decode and scale the image
-                inStream = getContentResolver().openInputStream(uri);
+                inStream = cr.openInputStream(uri);
 
                 bitmap = BitmapFactory.decodeStream(inStream, null, options);
 
@@ -144,7 +200,9 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(Bitmap result) {
-            ivPicture.setImageBitmap(result);
+            if (result != null) {
+                ivPicture.setImageBitmap(result);
+            }
         }
     }
 }
