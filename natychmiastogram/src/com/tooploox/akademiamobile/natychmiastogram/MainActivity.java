@@ -139,6 +139,9 @@ public class MainActivity extends Activity {
             case R.id.action_sepia:
                 applySepia();
                 return true;
+            case R.id.action_grayscale:
+                applyGrayscale();
+                return true;
         }
         return super.onMenuItemSelected(featureId, item);
     }
@@ -146,7 +149,18 @@ public class MainActivity extends Activity {
     private void applySepia() {
         if (mCurrentlyDisplayedBitmap != null) {
             Bitmap tmp = ImageFilter.sepia(mCurrentlyDisplayedBitmap);
-            ivPicture.setImageBitmap(mCurrentlyDisplayedBitmap);
+            ivPicture.setImageBitmap(tmp);
+            mCurrentlyDisplayedBitmap.recycle();
+            mCurrentlyDisplayedBitmap = tmp;
+        } else {
+            Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void applyGrayscale() {
+        if (mCurrentlyDisplayedBitmap != null) {
+            Bitmap tmp = ImageFilter.grayscale(mCurrentlyDisplayedBitmap);
+            ivPicture.setImageBitmap(tmp);
             mCurrentlyDisplayedBitmap.recycle();
             mCurrentlyDisplayedBitmap = tmp;
         } else {
