@@ -146,9 +146,9 @@ public class MainActivity extends Activity {
     private void applySepia() {
         if (mCurrentlyDisplayedBitmap != null) {
             Bitmap tmp = ImageFilter.sepia(mCurrentlyDisplayedBitmap);
+            ivPicture.setImageBitmap(mCurrentlyDisplayedBitmap);
             mCurrentlyDisplayedBitmap.recycle();
             mCurrentlyDisplayedBitmap = tmp;
-            ivPicture.setImageBitmap(mCurrentlyDisplayedBitmap);
         } else {
             Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
         }
