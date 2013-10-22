@@ -32,9 +32,9 @@ public class MainActivity extends Activity {
 
     protected ImageView ivPicture;
 
-    String mCurrentPhotoPath = null;
+    String currentPhotoPath = null;
 
-    Bitmap mCurrentlyDisplayedBitmap = null;
+    Bitmap currentlyDisplayedBitmap = null;
 
     protected void afterSetContentView() {
         ivPicture = (ImageView) findViewById(R.id.iv_picture);
@@ -73,15 +73,14 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == RC_IMAGE_CAPTURE || requestCode == RC_GET_PICTURE) {
+            if (requestCode == RC_IMAGE_CAPTURE) {
                 LoadBitmapTask task = new LoadBitmapTask();
-                Uri uri = null;
+                Uri uri = Uri.fromFile(new File(currentPhotoPath));
 
-                if (requestCode == RC_GET_PICTURE) {
-                    uri = data.getData();
-                } else if (requestCode == RC_IMAGE_CAPTURE) {
-                    uri = Uri.fromFile(new File(mCurrentPhotoPath));
-                }
+                task.execute(uri);
+            } else if (requestCode == RC_GET_PICTURE) {
+                LoadBitmapTask task = new LoadBitmapTask();
+                Uri uri = data.getData();
 
                 task.execute(uri);
             }
@@ -112,9 +111,9 @@ public class MainActivity extends Activity {
             storageDir.delete();
         }
         // If the bitmap was already used and not recycled, recycle it to release memory
-        if (mCurrentlyDisplayedBitmap != null && !mCurrentlyDisplayedBitmap.isRecycled()) {
-            mCurrentlyDisplayedBitmap.recycle();
-            mCurrentlyDisplayedBitmap = null;
+        if (currentlyDisplayedBitmap != null && !currentlyDisplayedBitmap.isRecycled()) {
+            currentlyDisplayedBitmap.recycle();
+            currentlyDisplayedBitmap = null;
         }
         super.onDestroy();
     }
@@ -152,11 +151,11 @@ public class MainActivity extends Activity {
 
     // TODO: kick it off in background thread
     private void applySepia() {
-        if (mCurrentlyDisplayedBitmap != null) {
-            Bitmap tmp = ImageFilter.sepia(mCurrentlyDisplayedBitmap);
+        if (currentlyDisplayedBitmap != null) {
+            Bitmap tmp = ImageFilter.sepia(currentlyDisplayedBitmap);
             ivPicture.setImageBitmap(tmp);
-            mCurrentlyDisplayedBitmap.recycle();
-            mCurrentlyDisplayedBitmap = tmp;
+            currentlyDisplayedBitmap.recycle();
+            currentlyDisplayedBitmap = tmp;
         } else {
             Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
         }
@@ -164,11 +163,11 @@ public class MainActivity extends Activity {
 
     // TODO: move to background thread
     private void applyGrayscale() {
-        if (mCurrentlyDisplayedBitmap != null) {
-            Bitmap tmp = ImageFilter.grayscale(mCurrentlyDisplayedBitmap);
+        if (currentlyDisplayedBitmap != null) {
+            Bitmap tmp = ImageFilter.grayscale(currentlyDisplayedBitmap);
             ivPicture.setImageBitmap(tmp);
-            mCurrentlyDisplayedBitmap.recycle();
-            mCurrentlyDisplayedBitmap = tmp;
+            currentlyDisplayedBitmap.recycle();
+            currentlyDisplayedBitmap = tmp;
         } else {
             Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
         }
@@ -185,11 +184,11 @@ public class MainActivity extends Activity {
         }
         String filename = "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
         File outFile = new File(picturesDir + File.separator + filename);
-        if (mCurrentlyDisplayedBitmap != null) {
+        if (currentlyDisplayedBitmap != null) {
             FileOutputStream out = null;
             try {
                 out = new FileOutputStream(outFile);
-                mCurrentlyDisplayedBitmap.compress(Bitmap.CompressFormat.JPEG, 95, out);
+                currentlyDisplayedBitmap.compress(Bitmap.CompressFormat.JPEG, 95, out);
                 out.flush();
             } catch (IOException e) {
                 Toast.makeText(this, "Coś nie poszło jak trzeba...", Toast.LENGTH_LONG).show();
@@ -219,7 +218,7 @@ public class MainActivity extends Activity {
             }
             File image = File.createTempFile("img", ".jpg", storageDir);
 
-            mCurrentPhotoPath = image.getAbsolutePath();
+            currentPhotoPath = image.getAbsolutePath();
             return image;
         } catch (Exception e) {
             Toast.makeText(this, "Hmm, na pewno możesz zapisywać na kartę SD?", Toast.LENGTH_LONG).show();
@@ -250,8 +249,8 @@ public class MainActivity extends Activity {
                 //bitmap = BitmapFactory.decodeStream(inStream);
 
                 // If the bitmap was already used, recycle it to release memory
-                if (mCurrentlyDisplayedBitmap != null) {
-                    mCurrentlyDisplayedBitmap.recycle();
+                if (currentlyDisplayedBitmap != null) {
+                    currentlyDisplayedBitmap.recycle();
                 }
 
                 // First check the size of the image
@@ -270,7 +269,7 @@ public class MainActivity extends Activity {
                 // Decode and scale the image
                 inStream = cr.openInputStream(uri);
 
-                mCurrentlyDisplayedBitmap = BitmapFactory.decodeStream(inStream, null, options);
+                currentlyDisplayedBitmap = BitmapFactory.decodeStream(inStream, null, options);
 
                 inStream.close();
             } catch (FileNotFoundException e) {
@@ -281,7 +280,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
 
-            return mCurrentlyDisplayedBitmap;
+            return currentlyDisplayedBitmap;
         }
 
         @Override
