@@ -149,25 +149,19 @@ public class MainActivity extends Activity {
         return super.onMenuItemSelected(featureId, item);
     }
 
-    // TODO: kick it off in background thread
     private void applySepia() {
         if (currentlyDisplayedBitmap != null) {
-            Bitmap tmp = ImageFilter.sepia(currentlyDisplayedBitmap);
-            ivPicture.setImageBitmap(tmp);
-            currentlyDisplayedBitmap.recycle();
-            currentlyDisplayedBitmap = tmp;
+            ApplyFilterTask task = new ApplyFilterTask();
+            task.execute(new BitmapFilter(currentlyDisplayedBitmap, BitmapFilter.Type.SEPIA));
         } else {
             Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
         }
     }
 
-    // TODO: move to background thread
     private void applyGrayscale() {
         if (currentlyDisplayedBitmap != null) {
-            Bitmap tmp = ImageFilter.grayscale(currentlyDisplayedBitmap);
-            ivPicture.setImageBitmap(tmp);
-            currentlyDisplayedBitmap.recycle();
-            currentlyDisplayedBitmap = tmp;
+            ApplyFilterTask task = new ApplyFilterTask();
+            task.execute(new BitmapFilter(currentlyDisplayedBitmap, BitmapFilter.Type.GRAYSCALE));
         } else {
             Toast.makeText(this, "No ale nie ma jeszcze żadnego zdjęcia...", Toast.LENGTH_LONG).show();
         }
@@ -223,6 +217,47 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             Toast.makeText(this, "Hmm, na pewno możesz zapisywać na kartę SD?", Toast.LENGTH_LONG).show();
             return null;
+        }
+    }
+
+
+    private static class BitmapFilter {
+        public enum Type {
+            SEPIA, GRAYSCALE;
+        }
+
+        public Bitmap src;
+        public Type filterType;
+
+        public BitmapFilter(Bitmap src, Type filterType) {
+            this.src = src;
+            this.filterType = filterType;
+        }
+    }
+
+    private class ApplyFilterTask extends AsyncTask<BitmapFilter, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(BitmapFilter... params) {
+            if (params != null && params.length > 0) {
+                BitmapFilter requestedFilter = params[0];
+                if (requestedFilter != null) {
+                    switch (requestedFilter.filterType) {
+                        case GRAYSCALE:
+                            return ImageFilter.grayscale(requestedFilter.src);
+                        case SEPIA:
+                            return ImageFilter.sepia(requestedFilter.src);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            super.onPostExecute(result);
+            ivPicture.setImageBitmap(result);
+            currentlyDisplayedBitmap.recycle();
+            currentlyDisplayedBitmap = result;
         }
     }
 
