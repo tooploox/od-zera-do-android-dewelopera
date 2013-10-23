@@ -60,7 +60,7 @@ body {
  * LINKS
  *********************************************/
 .reveal a:not(.image) {
-  color: #13daec;
+  color: #99CC00;
   text-decoration: none;
   -webkit-transition: color .15s ease;
   -moz-transition: color .15s ease;
@@ -68,8 +68,32 @@ body {
   -o-transition: color .15s ease;
   transition: color .15s ease; }
 
+.reveal .blue-links a:not(.image) {
+  color: #1C657F;
+}
+
+.reveal .blue-links a:not(.image):hover  {
+  color: #165165;
+}
+
+.reveal .brown-links a:not(.image) {
+  color: #867355;
+}
+
+.reveal .brown-links a:not(.image):hover  {
+  color: #AC946D;
+}
+
+.reveal .sea-links a:not(.image) {
+  color: #03727A;
+}
+
+.reveal .sea-links a:not(.image):hover  {
+  color: #0396A0;
+}
+
 .reveal a:not(.image):hover {
-  color: #71e9f4;
+  color: #BFFF00;
   text-shadow: none;
   border: none; }
 
