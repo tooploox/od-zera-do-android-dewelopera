@@ -1,0 +1,70 @@
+// res/values/strings.xml
+
+    <string name="action_save">Zapisz</string>
+
+// res/menu/main.xml
+
+    <item
+        android:id="@+id/action_save"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_save"/>
+
+
+// MainActivity.java
+
+    private void saveBitmap() {
+        File picturesDir = new File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            + File.separator
+            + "natychmiastogram"
+        );
+
+        if (!picturesDir.exists()) {
+            if (!picturesDir.mkdirs()) {
+                // TODO: error-handling
+            }
+        }
+
+        String filename = "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
+        File outFile = new File(picturesDir + File.separator + filename);
+
+        if (currentlyDisplayedBitmap != null) {
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(outFile);
+                currentlyDisplayedBitmap.compress(Bitmap.CompressFormat.JPEG, 95, out);
+                out.flush();
+            } catch (IOException e) {
+                Toast.makeText(this, "Coś nie poszło jak trzeba...", Toast.LENGTH_LONG).show();
+            } finally {
+                try {
+                    out.close();
+                    Toast.makeText(this, String.format("Zdjęcie zapisane: %s", outFile.getAbsoluteFile()), Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // TODO: add error-handling
+                }
+            }
+        }
+    }
+
+// MainActivity.java
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        // handle options item selected
+        switch (item.getItemId()) {
+            case R.id.action_sepia:
+                applySepia();
+                return true;
+            case R.id.action_grayscale:
+                applyGrayscale();
+                return true;
+            case R.id.action_save:
+                saveBitmap();
+                return true;
+        }
+
+        return super.onMenuItemSelected(featureId, item);
+    }

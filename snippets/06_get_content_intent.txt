@@ -1,0 +1,45 @@
+// MainActivity.java
+
+    protected static final int RC_GET_PICTURE = 1;
+
+// MainActivity.java
+
+        ivPicture.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                //Toast.makeText(MainActivity.this, "Tapnąłeś mnie, ale tym razem długo. Jesteś boski!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(intent, RC_GET_PICTURE);
+
+                return true;
+            }
+        });
+
+// MainActivity.java
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == RC_IMAGE_CAPTURE) {
+                LoadBitmapTask task = new LoadBitmapTask();
+                Uri uri = Uri.fromFile(new File(currentPicturePath));
+
+                task.execute(uri);
+            } else if (requestCode == RC_GET_PICTURE) {
+                LoadBitmapTask task = new LoadBitmapTask();
+                Uri uri = data.getData();
+
+                task.execute(uri);
+            }
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            Toast.makeText(this, "Nie to nie! Foch!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Auć, wystąpił problem z zewnętrzną aplikacją :/", Toast.LENGTH_SHORT).show();
+        }
+    }

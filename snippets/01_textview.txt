@@ -1,0 +1,16 @@
+// res/layout/activity_main.xml
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textColor="@color/take_picture_placeholder_txt_color"
+        android:text="@string/take_picture_placeholder_txt" />
+
+// res/values/strings.xml
+
+    <string name="take_picture_placeholder_txt">Tapnij, aby zrobić zdjęcie</string>
+
+// res/values/colors.xml
+
+    <color name="take_picture_placeholder_txt_color">#aaa</color>

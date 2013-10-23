@@ -1,0 +1,64 @@
+// AndroidManifest.xml
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+// MainActivity.java
+
+    String currentPicturePath = null;
+
+// MainActivity.java
+
+    private File getStorage() {
+        return new File(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/temp/");
+    }
+
+    private File createImageFile() {
+        // Create a temporary image file
+        File storageDir = getStorage();
+
+        try {
+            if (!storageDir.exists()) {
+                storageDir.mkdirs();
+            }
+
+            return File.createTempFile("img", ".jpg", storageDir);
+        } catch (Exception e) {
+            Toast.makeText(this, "Hmm, na pewno możesz zapisywać na kartę SD?", Toast.LENGTH_LONG).show();
+            return null;
+        }
+    }
+
+// MainActivity.java
+
+    protected void afterSetContentView() {
+        ivPicture = (ImageView) findViewById(R.id.iv_picture);
+
+        ivPicture.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(MainActivity.this, "Tapnąłeś mnie!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // Set the file, where you want the file to be saved.
+                // Required for cross-device compatibility
+                File imageFile = createImageFile();
+                Uri imageUri = Uri.fromFile(imageFile);
+
+                currentPicturePath = imageFile.getAbsolutePath();
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(intent, RC_IMAGE_CAPTURE);
+            }
+        });
+
+        ivPicture.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(MainActivity.this, "Tapnąłeś mnie, ale tym razem długo. Jesteś boski!", Toast.LENGTH_SHORT).show();
+
+                return true;
+            }
+        });
+    }
