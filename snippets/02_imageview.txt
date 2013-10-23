@@ -6,7 +6,6 @@
         android:layout_height="match_parent"
         />
 
-
 // MainActivity.java
 
     protected ImageView ivPicture;
@@ -41,3 +40,5 @@
             }
         });
     }
+
+// DEBUG TIME!

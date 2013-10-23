@@ -42,7 +42,7 @@
         return super.onMenuItemSelected(featureId, item);
     }
 
-// Run the app
+// DEBUG TIME!
 
 // ImageFilter.java
 
@@ -226,3 +226,4 @@ public class ImageFilter {
         }
     }
 
+// DEBUG TIME!

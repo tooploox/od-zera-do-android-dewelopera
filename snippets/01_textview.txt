@@ -14,3 +14,5 @@
 // res/values/colors.xml
 
     <color name="take_picture_placeholder_txt_color">#aaa</color>
+
+// DEBUG TIME!

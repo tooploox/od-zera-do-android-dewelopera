@@ -43,3 +43,5 @@
             Toast.makeText(this, "Auć, wystąpił problem z zewnętrzną aplikacją :/", Toast.LENGTH_SHORT).show();
         }
     }
+
+// DEBUG TIME!
