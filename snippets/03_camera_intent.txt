@@ -4,6 +4,8 @@
 
 // MainActivity.java
 
+    protected static final int RC_IMAGE_CAPTURE = 0;
+
     String currentPicturePath = null;
 
 // MainActivity.java
