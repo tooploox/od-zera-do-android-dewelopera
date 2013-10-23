@@ -1,0 +1,36 @@
+// MainActivity.java
+
+    boolean menuEnabled = true;
+
+
+// MainActivity.java
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(!getMenuEnabled()) {
+            menu.findItem(R.id.action_sepia).setEnabled(false);
+            menu.findItem(R.id.action_grayscale).setEnabled(false);
+            menu.findItem(R.id.action_save).setEnabled(false);
+        } else {
+            menu.findItem(R.id.action_sepia).setEnabled(true);
+            menu.findItem(R.id.action_grayscale).setEnabled(true);
+            menu.findItem(R.id.action_save).setEnabled(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    synchronized private void setMenuEnabled(boolean trueFalse) {
+        menuEnabled = trueFalse;
+    }
+
+    synchronized private boolean getMenuEnabled() {
+        return menuEnabled;
+    }
+
+// MainActivity.java: ApplyFilterTask.doInBackground()
+
+            setMenuEnabled(false);
+
+// MainActivity.java: ApplyFilterTask.onPostExecute()
+
+            setMenuEnabled(true);
