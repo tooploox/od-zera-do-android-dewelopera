@@ -86,6 +86,7 @@ public class ImageFilter {
         B = Color.blue(colorPixel);
         // apply grayscale sample
         B = G = R = (int) (grayscale.red * R + grayscale.green * G + grayscale.blue * B);
+
         return Color.argb(A, R, G, B);
     }
 
@@ -98,19 +99,23 @@ public class ImageFilter {
 
         // apply intensity level for sepid-toning on each channel
         R += (sepia.depth * sepia.red);
+
         if (R > 255) {
             R = 255;
         }
 
         G += (sepia.depth * sepia.green);
+
         if (G > 255) {
             G = 255;
         }
 
         B += (sepia.depth * sepia.blue);
+
         if (B > 255) {
             B = 255;
         }
+
         return Color.argb(A, R, G, B);
     }
 }

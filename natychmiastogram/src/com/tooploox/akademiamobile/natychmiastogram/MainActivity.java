@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
 
     protected ImageView ivPicture;
 
-    String currentPhotoPath = null;
+    String currentPicturePath = null;
 
     Bitmap currentlyDisplayedBitmap = null;
 
@@ -46,8 +46,14 @@ public class MainActivity extends Activity {
                 //Toast.makeText(MainActivity.this, "Tapnąłeś mnie!", Toast.LENGTH_SHORT).show();
 
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                // Set the file, where you want the file to be saved
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(createImageFile()));
+                // Set the file, where you want the file to be saved.
+                // Required for cross-device compatibility
+                File imageFile = createImageFile();
+                Uri imageUri = Uri.fromFile(imageFile);
+
+                currentPicturePath = imageFile.getAbsolutePath();
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 startActivityForResult(intent, RC_IMAGE_CAPTURE);
             }
         });
@@ -75,7 +81,7 @@ public class MainActivity extends Activity {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == RC_IMAGE_CAPTURE) {
                 LoadBitmapTask task = new LoadBitmapTask();
-                Uri uri = Uri.fromFile(new File(currentPhotoPath));
+                Uri uri = Uri.fromFile(new File(currentPicturePath));
 
                 task.execute(uri);
             } else if (requestCode == RC_GET_PICTURE) {
@@ -146,6 +152,7 @@ public class MainActivity extends Activity {
                 saveBitmap();
                 return true;
         }
+
         return super.onMenuItemSelected(featureId, item);
     }
 
@@ -168,16 +175,21 @@ public class MainActivity extends Activity {
     }
 
     private void saveBitmap() {
-        File picturesDir =
-                        new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator
-                                        + "natychmiastogram");
-        if(!picturesDir.exists()) {
+        File picturesDir = new File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            + File.separator
+            + "natychmiastogram"
+        );
+
+        if (!picturesDir.exists()) {
             if (!picturesDir.mkdirs()) {
                 // TODO: error-handling
             }
         }
+
         String filename = "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
         File outFile = new File(picturesDir + File.separator + filename);
+
         if (currentlyDisplayedBitmap != null) {
             FileOutputStream out = null;
             try {
@@ -210,10 +222,7 @@ public class MainActivity extends Activity {
             if (!storageDir.exists()) {
                 storageDir.mkdirs();
             }
-            File image = File.createTempFile("img", ".jpg", storageDir);
-
-            currentPhotoPath = image.getAbsolutePath();
-            return image;
+            return File.createTempFile("img", ".jpg", storageDir);
         } catch (Exception e) {
             Toast.makeText(this, "Hmm, na pewno możesz zapisywać na kartę SD?", Toast.LENGTH_LONG).show();
             return null;
