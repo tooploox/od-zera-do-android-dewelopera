@@ -8,14 +8,22 @@ import java.io.InputStream;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -243,7 +251,40 @@ public class MainActivity extends Activity {
             this.filterType = filterType;
         }
     }
+    
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int color, int cornerDips, int borderDips, Context context) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
 
+        final int borderSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float) borderDips,
+                context.getResources().getDisplayMetrics());
+        final int cornerSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float) cornerDips,
+                context.getResources().getDisplayMetrics());
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+
+        // prepare canvas for transfer
+        paint.setAntiAlias(true);
+        paint.setColor(0xFFFFFFFF);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawARGB(0, 0, 0, 0);
+        canvas.drawRoundRect(rectF, cornerSizePx, cornerSizePx, paint);
+
+        // draw bitmap
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        // draw border
+        paint.setColor(color);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth((float) borderSizePx);
+        canvas.drawRoundRect(rectF, cornerSizePx, cornerSizePx, paint);
+
+        return output;
+    }
+    
     private class ApplyFilterTask extends AsyncTask<BitmapFilter, Void, Bitmap> {
         @Override
         protected Bitmap doInBackground(BitmapFilter... params) {
@@ -251,10 +292,10 @@ public class MainActivity extends Activity {
                 BitmapFilter requestedFilter = params[0];
                 if (requestedFilter != null) {
                     switch (requestedFilter.filterType) {
-                        case GRAYSCALE:
-                            return ImageFilter.grayscale(requestedFilter.src);
-                        case SEPIA:
-                            return ImageFilter.sepia(requestedFilter.src);
+                    case GRAYSCALE:
+                        return getRoundedCornerBitmap(ImageFilter.grayscale(requestedFilter.src), 0xff000000, 10, 1, MainActivity.this);
+                    case SEPIA:
+                        return getRoundedCornerBitmap(ImageFilter.sepia(requestedFilter.src), 0xff000000, 10, 1, MainActivity.this);
                     }
                 }
             }
