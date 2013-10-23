@@ -44,6 +44,8 @@ public class MainActivity extends Activity {
 
     Bitmap currentlyDisplayedBitmap = null;
 
+    boolean menuEnabled = true;
+
     protected void afterSetContentView() {
         ivPicture = (ImageView) findViewById(R.id.iv_picture);
 
@@ -164,6 +166,28 @@ public class MainActivity extends Activity {
         return super.onMenuItemSelected(featureId, item);
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(!getMenuEnabled()) {
+            menu.findItem(R.id.action_sepia).setEnabled(false);
+            menu.findItem(R.id.action_grayscale).setEnabled(false);
+            menu.findItem(R.id.action_save).setEnabled(false);
+        } else {
+            menu.findItem(R.id.action_sepia).setEnabled(true);
+            menu.findItem(R.id.action_grayscale).setEnabled(true);
+            menu.findItem(R.id.action_save).setEnabled(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    synchronized private void setMenuEnabled(boolean trueFalse) {
+        menuEnabled = trueFalse;
+    }
+
+    synchronized private boolean getMenuEnabled() {
+        return menuEnabled;
+    }
+
     private void applySepia() {
         if (currentlyDisplayedBitmap != null) {
             ApplyFilterTask task = new ApplyFilterTask();
@@ -215,6 +239,8 @@ public class MainActivity extends Activity {
                     // TODO: add error-handling
                 }
             }
+        } else {
+            Toast.makeText(this, "Najpierw zrób zdjęcie :)", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -251,51 +277,19 @@ public class MainActivity extends Activity {
             this.filterType = filterType;
         }
     }
-    
-    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int color, int cornerDips, int borderDips, Context context) {
-        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
 
-        final int borderSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float) borderDips,
-                context.getResources().getDisplayMetrics());
-        final int cornerSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (float) cornerDips,
-                context.getResources().getDisplayMetrics());
-        final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        final RectF rectF = new RectF(rect);
-
-        // prepare canvas for transfer
-        paint.setAntiAlias(true);
-        paint.setColor(0xFFFFFFFF);
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawARGB(0, 0, 0, 0);
-        canvas.drawRoundRect(rectF, cornerSizePx, cornerSizePx, paint);
-
-        // draw bitmap
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
-
-        // draw border
-        paint.setColor(color);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth((float) borderSizePx);
-        canvas.drawRoundRect(rectF, cornerSizePx, cornerSizePx, paint);
-
-        return output;
-    }
-    
     private class ApplyFilterTask extends AsyncTask<BitmapFilter, Void, Bitmap> {
         @Override
         protected Bitmap doInBackground(BitmapFilter... params) {
             if (params != null && params.length > 0) {
+                setMenuEnabled(false);
                 BitmapFilter requestedFilter = params[0];
                 if (requestedFilter != null) {
                     switch (requestedFilter.filterType) {
                     case GRAYSCALE:
-                        return getRoundedCornerBitmap(ImageFilter.grayscale(requestedFilter.src), 0xff000000, 10, 1, MainActivity.this);
+                        return ImageFilter.roundBitmapCorners(ImageFilter.grayscale(requestedFilter.src), 0xff000000, 10, 1, MainActivity.this);
                     case SEPIA:
-                        return getRoundedCornerBitmap(ImageFilter.sepia(requestedFilter.src), 0xff000000, 10, 1, MainActivity.this);
+                        return ImageFilter.roundBitmapCorners(ImageFilter.sepia(requestedFilter.src), 0xff000000, 10, 1, MainActivity.this);
                     }
                 }
             }
@@ -308,6 +302,7 @@ public class MainActivity extends Activity {
             ivPicture.setImageBitmap(result);
             currentlyDisplayedBitmap.recycle();
             currentlyDisplayedBitmap = result;
+            setMenuEnabled(true);
         }
     }
 
