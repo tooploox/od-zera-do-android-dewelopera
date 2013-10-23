@@ -1,3 +1,49 @@
+// res/values/strings.xml
+
+    <string name="action_grayscale">Grayscale</string>
+    <string name="action_sepia">Sepia</string>
+
+// res/menu/main.xml
+
+    <item
+        android:id="@+id/action_sepia"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_sepia"/>
+    <item
+        android:id="@+id/action_grayscale"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_grayscale"/>
+
+
+// MainActivity.java
+
+    private void applySepia() {
+        Toast.makeText(this, "Tutaj będzie nałożony filtr sepia", Toast.LENGTH_LONG).show();
+    }
+
+    private void applyGrayscale() {
+        Toast.makeText(this, "Tutaj będzie filtr grayscale", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        // handle options item selected
+        switch (item.getItemId()) {
+            case R.id.action_sepia:
+                applySepia();
+                return true;
+            case R.id.action_grayscale:
+                applyGrayscale();
+                return true;
+        }
+
+        return super.onMenuItemSelected(featureId, item);
+    }
+
+// Run the app
+
 // ImageFilter.java
 
 public class ImageFilter {
@@ -180,37 +226,3 @@ public class ImageFilter {
         }
     }
 
-// res/values/strings.xml
-
-    <string name="action_grayscale">Grayscale</string>
-    <string name="action_sepia">Sepia</string>
-
-// res/menu/main.xml
-
-    <item
-        android:id="@+id/action_sepia"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_sepia"/>
-    <item
-        android:id="@+id/action_grayscale"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_grayscale"/>
-
-// MainActivity.java
-
-    @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        // handle options item selected
-        switch (item.getItemId()) {
-            case R.id.action_sepia:
-                applySepia();
-                return true;
-            case R.id.action_grayscale:
-                applyGrayscale();
-                return true;
-        }
-
-        return super.onMenuItemSelected(featureId, item);
-    }
